@@ -1,0 +1,54 @@
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useParams } from 'react-router-dom'
+import { setCourse, setEditCourse } from '../../../../slice/courseSlice'
+import { RenderSteps } from '../AddCourse/RenderSteps'
+import { getFullCourseDetails } from '../../../../services/operations/courseDetailsAPI'
+
+export const EditCourse = () => {
+
+    const dispatch = useDispatch()
+    const {course} = useSelector((state) => state.course)
+    const [loading, setLoading] = useState(false)
+    const {token} = useSelector((state) => state.auth)
+    const {courseId} = useParams()
+
+    useEffect(() => {
+        const getFullDetailsOfCourse = async () => {
+            setLoading(true)
+            const result = await getFullCourseDetails(courseId, token)
+            console.log("FULL COURSE DETAILS..", result)
+            if(result?.courseDetails) {
+                dispatch(setEditCourse(true))
+                dispatch(setCourse(result?.courseDetails))
+            }
+            setLoading(false)
+        }
+        getFullDetailsOfCourse()
+     }, [])
+
+     if(loading) {
+        return (
+            <div className="grid flex-1 place-items-center">
+              <div className="spinner"></div>
+            </div>
+          )
+     }
+
+  return (
+    <div>
+        <h1 className="mb-14 text-3xl font-medium text-richblack-5">
+            Edit Course
+        </h1>
+        <div className="mx-auto max-w-[600px]">
+            {course ? (
+                <RenderSteps />
+            ) : (
+            <p className="mt-14 text-center text-3xl font-semibold text-richblack-100">
+                Course not found
+            </p>
+        )}
+        </div>
+    </div>
+  )
+}
